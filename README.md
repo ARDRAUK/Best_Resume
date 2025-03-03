@@ -10,6 +10,7 @@ A Streamlit-based web application that uses Gemini AI to analyze multiple resume
 * Clean and simple UI using Streamlit
 
 **How it Works**
+
 1.Upload PDF resumes (multiple files allowed).
 2.Paste the job description in the text area.
 3.Click Analyze Resumes.
