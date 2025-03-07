@@ -6,7 +6,7 @@ A Streamlit-based web application that uses Gemini AI to analyze multiple resume
 * Upload multiple PDF resumes
 * Paste any Job Description (JD)
 * Get the Top 5 best matching resumes based on content relevance
-* Powered by Google Gemini AI
+* Powered by Groq API using the DeepSeek model.
 * Clean and simple UI using Streamlit
 
 **How it Works**
@@ -17,6 +17,8 @@ A Streamlit-based web application that uses Gemini AI to analyze multiple resume
 
 3.Click Analyze Resumes.
 
-4.The app uses Gemini AI to compare resumes to the JD.
+4.The app sends resumes and the JD to Groq's DeepSeek model for analysis.
 
-5.Returns exactly 5 resumes with match percentages.
+5.The AI compares the resumes to the JD and returns exactly 5 resumes with match percentages in JSON format.
+
+6.The results are displayed in the app as a list of the Top 5 matching candidates.
