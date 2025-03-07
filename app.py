@@ -1,26 +1,25 @@
 import streamlit as st
-import google.generativeai as genai
 import os
 import PyPDF2 as pdf
 from dotenv import load_dotenv
 import json
+from groq import Groq
 
 # Load API Key
-load_dotenv()  
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+load_dotenv()
+groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-# Function to get Gemini AI response
-def get_gemini_response(input):
+# Function to get Groq DeepSeek response
+def get_groq_response(input):
     try:
-        model = genai.GenerativeModel('gemini-1.5-pro')
-        response = model.generate_content(input)
-
-        if not response or not response.text:
-            raise ValueError("AI returned an empty response. Please check your API key or model.")
-
-        return response.text.strip()
+        response = groq_client.chat.completions.create(
+            model="deepseek-chat",
+            messages=[{"role": "user", "content": input}],
+            temperature=0.2,
+        )
+        return response.choices[0].message.content.strip()
     except Exception as e:
-        st.error(f"Error with Gemini API: {e}")
+        st.error(f"Error with Groq API: {e}")
         return ""
 
 # Function to extract text from PDFs
@@ -97,7 +96,7 @@ if submit:
                 formatted_input = create_input_prompt(resumes_json, jd.strip())
 
                 # Get AI response
-                response_text = get_gemini_response(formatted_input)
+                response_text = get_groq_response(formatted_input)
                 
                 # Extract JSON portion safely
                 json_start = response_text.find("{")
