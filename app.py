@@ -9,11 +9,11 @@ from groq import Groq
 load_dotenv()
 groq_client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
-# Function to get Groq DeepSeek response
+# Function to get Groq response using a smaller model
 def get_groq_response(input):
     try:
         response = groq_client.chat.completions.create(
-            model="deepseek-chat",
+            model="llama-3.1-8b-instant",  # ✅ Using a more efficient model
             messages=[{"role": "user", "content": input}],
             temperature=0.2,
         )
@@ -22,15 +22,20 @@ def get_groq_response(input):
         st.error(f"Error with Groq API: {e}")
         return ""
 
-# Function to extract text from PDFs
-def input_pdf_text(uploaded_file):
+# Function to extract text from PDFs (with truncation)
+def input_pdf_text(uploaded_file, max_chars=3000):
     reader = pdf.PdfReader(uploaded_file)
     text = ""
     for page in reader.pages:
         text += page.extract_text() or ""
-    return text
+    return text[:max_chars]  # ✅ Truncate text to prevent exceeding token limits
 
-# 🔹 Updated Prompt Template
+# Function to summarize resume text
+def summarize_resume(text, max_sentences=5):
+    sentences = text.split('. ')
+    return '. '.join(sentences[:max_sentences])  # ✅ Keep only the first 5 sentences
+
+# Updated prompt template
 def create_input_prompt(resumes_json, jd):
     return f"""
 Hey, act like a highly experienced ATS (Application Tracking System).
@@ -82,8 +87,9 @@ if submit:
         with st.spinner("Analyzing resumes... This may take a moment."):
             resume_texts = []
             for uploaded_file in uploaded_files:
-                text = input_pdf_text(uploaded_file).strip()  # Remove unwanted spaces/newlines
-                resume_texts.append({"Candidate": uploaded_file.name.strip(), "Text": text})
+                text = input_pdf_text(uploaded_file).strip()  # ✅ Extract and truncate text
+                summarized_text = summarize_resume(text)  # ✅ Summarize the text
+                resume_texts.append({"Candidate": uploaded_file.name.strip(), "Text": summarized_text})
 
             # Debugging: Print resume names only
             st.write("Debug - Resumes being analyzed:", [r["Candidate"] for r in resume_texts])
@@ -97,7 +103,7 @@ if submit:
 
                 # Get AI response
                 response_text = get_groq_response(formatted_input)
-                
+
                 # Extract JSON portion safely
                 json_start = response_text.find("{")
                 json_end = response_text.rfind("}")
